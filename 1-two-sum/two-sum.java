@@ -1,15 +1,20 @@
 class Solution {
     public int[] twoSum(int[] nums, int target) {
-        Map<Integer, Integer> num_map = new HashMap<>();
-        for(int i=0; i<nums.length; i++){
-            int compli = target - nums[i];
-            if (num_map.containsKey(compli)){
-                return new int[]{num_map.get(compli), i};
-            }
-            num_map.put(nums[i], i);
+        int[] a =new int[2];
+        int l = nums.length;
+        
+        if(l == 0){
+            return a;
         }
-        throw new IllegalArgumentException("No Mastcvh found");
-
+        for(int i=0;i< l-1;i++){
+            for(int j=i+1; j< l; j++){
+                if((nums[i] + nums[j]) == target){
+                    a[0]= i;
+                    a[1]= j;
+                    break;
+                }
+        }}
+        return a;
         
     }
 }
