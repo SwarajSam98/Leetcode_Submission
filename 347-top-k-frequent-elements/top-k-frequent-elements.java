@@ -1,29 +1,30 @@
 class Solution {
     public int[] topKFrequent(int[] nums, int k) {
-        // Create a Map to store the frequency of each number
-        Map<Integer, Long> frequencyMap = Arrays.stream(nums)
-                                                .boxed() // box the ints to Integers
-                                                .collect(Collectors.groupingBy(Function.identity(), // group by the number itself
-                                                    Collectors.counting())); // count the frequency
-      
-        // Initialize a min-heap based on the frequency values
-        Queue<Map.Entry<Integer, Long>> minHeap = new PriorityQueue<>(Comparator.comparingLong(Map.Entry::getValue));
-      
-        // Iterate over the frequency map
-        for (Map.Entry<Integer, Long> entry : frequencyMap.entrySet()) {
-            // Insert the current entry into the min-heap
-            minHeap.offer(entry);
-          
-            // If the heap size exceeds 'k', remove the smallest frequency element
-            if (minHeap.size() > k) {
-                minHeap.poll();
+        Map<Integer, Integer> count = new HashMap<>();
+        List<Integer>[] freq = new List[nums.length + 1];
+
+        for (int i = 0; i < freq.length; i++) {
+            freq[i] = new ArrayList<>();
+        }
+
+        for (int n : nums) {
+            count.put(n, count.getOrDefault(n, 0) + 1);
+        }
+        for (Map.Entry<Integer, Integer> entry : count.entrySet()) {
+            freq[entry.getValue()].add(entry.getKey());
+        }
+
+        int[] res = new int[k];
+        int index = 0;
+        for (int i = freq.length - 1; i > 0 && index < k; i--) {
+            for (int n : freq[i]) {
+                res[index++] = n;
+                if (index == k) {
+                    return res;
+                }
             }
         }
-      
-        // Extract the top 'k' frequent numbers from the min-heap into an array
-        return minHeap.stream()
-                      .mapToInt(Map.Entry::getKey)
-                      .toArray();
+        return res;
         
     }
 }
