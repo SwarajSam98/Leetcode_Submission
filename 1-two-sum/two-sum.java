@@ -2,7 +2,7 @@ class Solution {
     public int[] twoSum(int[] nums, int target) {
         int[] a =new int[2];
         int l = nums.length;
-        
+        int b= nums[l-1];
         if(l == 0){
             return a;
         }
