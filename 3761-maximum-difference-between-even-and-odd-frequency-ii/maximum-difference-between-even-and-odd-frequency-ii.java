@@ -1,45 +1,47 @@
+
 class Solution {
     public int maxDifference(String s, int k) {
         int ans = Integer.MIN_VALUE;
 
-    for (Pair<Character, Character> pair : getPermutations()) {
-      final char a = pair.getKey();
-      final char b = pair.getValue();
+        for (char a = '0'; a <= '4'; a++) {
+            for (char b = '0'; b <= '4'; b++) {
+                if (a == b) continue;
 
-      // minDiff[parityA][parityB] := min(a - b) of all valid windows with
-      // parityA and parityB
-      int[][] minDiff = new int[2][2];
-      Arrays.stream(minDiff).forEach(A -> Arrays.fill(A, Integer.MAX_VALUE / 2));
-      // prefixA[i] := the number of 'a's in s[0..i)
-      List<Integer> prefixA = new ArrayList<>(List.of(0));
-      // prefixB[i] := the number of 'b's in s[0..i)
-      List<Integer> prefixB = new ArrayList<>(List.of(0));
-      for (int l = 0, r = 0; r < s.length(); ++r) {
-        prefixA.add(prefixA.get(prefixA.size() - 1) + (s.charAt(r) == a ? 1 : 0));
-        prefixB.add(prefixB.get(prefixB.size() - 1) + (s.charAt(r) == b ? 1 : 0));
-        while (r - l + 1 >= k &&                                   // the window size >= k
-               prefixA.get(l) < prefixA.get(prefixA.size() - 1) && // the number of 'a's > 0
-               prefixB.get(l) < prefixB.get(prefixB.size() - 1)) { // the number of 'b's > 0
-          minDiff[prefixA.get(l) % 2][prefixB.get(l) % 2] = Math.min(
-              minDiff[prefixA.get(l) % 2][prefixB.get(l) % 2], prefixA.get(l) - prefixB.get(l));
-          ++l;
+                int n = s.length();
+                int[] prefixA = new int[n + 1];
+                int[] prefixB = new int[n + 1];
+
+                // Build prefix arrays
+                for (int i = 0; i < n; i++) {
+                    prefixA[i + 1] = prefixA[i] + (s.charAt(i) == a ? 1 : 0);
+                    prefixB[i + 1] = prefixB[i] + (s.charAt(i) == b ? 1 : 0);
+                }
+
+                // minDiff[parityA][parityB]
+                int[][] minDiff = new int[2][2];
+                for (int[] row : minDiff)
+                    Arrays.fill(row, Integer.MAX_VALUE / 2);
+
+                for (int l = 0, r = 0; r < n; r++) {
+                    // Maintain window of size >= k and valid a, b counts
+                    while ((r - l + 1) >= k &&
+                            prefixA[l] < prefixA[r + 1] &&
+                            prefixB[l] < prefixB[r + 1]) {
+
+                        int pa = prefixA[l] % 2;
+                        int pb = prefixB[l] % 2;
+                        minDiff[pa][pb] = Math.min(minDiff[pa][pb], prefixA[l] - prefixB[l]);
+                        l++;
+                    }
+
+                    int pa = prefixA[r + 1] % 2;
+                    int pb = prefixB[r + 1] % 2;
+                    int candidate = (prefixA[r + 1] - prefixB[r + 1]) - minDiff[1 - pa][pb];
+                    ans = Math.max(ans, candidate);
+                }
+            }
         }
-        ans = Math.max(ans, (prefixA.get(prefixA.size() - 1) - prefixB.get(prefixB.size() - 1)) -
-                                minDiff[1 - prefixA.get(prefixA.size() - 1) % 2]
-                                       [prefixB.get(prefixB.size() - 1) % 2]);
-      }
-    }
 
-    return ans;
-  }
-
-  private List<Pair<Character, Character>> getPermutations() {
-    List<Pair<Character, Character>> permutations = new ArrayList<>();
-    for (final char a : "01234".toCharArray())
-      for (final char b : "01234".toCharArray())
-        if (a != b)
-          permutations.add(new Pair<>(a, b));
-    return permutations;
-        
+        return ans == Integer.MIN_VALUE ? -1 : ans;
     }
 }
