@@ -1,49 +1,56 @@
 class Solution {
+    int M = (int)1e9 + 7;
+
     public int possibleStringCount(String word, int k) {
-        List<Integer> groups = getConsecutiveLetters(word);
-    final int totalCombinations =
-        (int) groups.stream().mapToLong(Integer::longValue).reduce(1L, (a, b) -> a * b % MOD);
-    if (k <= groups.size())
-      return totalCombinations;
+        if (k > word.length()) return 0;
 
-    // dp[j] := the number of ways to form strings of length j using
-    // groups[0..i]
-    int[] dp = new int[k];
-    dp[0] = 1; // Base case: empty string
+        List<Integer> freq = new ArrayList<>();
+        int count = 1;
+        for (int i = 1; i < word.length(); i++) {
+            if (word.charAt(i) == word.charAt(i - 1)) {
+                count++;
+            } else {
+                freq.add(count);
+                count = 1;
+            }
+        }
+        freq.add(count);
 
-    for (int i = 0; i < groups.size(); ++i) {
-      int[] newDp = new int[k];
-      int windowSum = 0;
-      int group = groups.get(i);
-      for (int j = i; j < k; ++j) {
-        newDp[j] = (newDp[j] + windowSum) % MOD;
-        windowSum = (windowSum + dp[j]) % MOD;
-        if (j >= group)
-          windowSum = (windowSum - dp[j - group] + MOD) % MOD;
-      }
-      dp = newDp;
-    }
+        long P = 1; // total possible strings
+        for (int f : freq) {
+            P = (P * f) % M;
+        }
 
-    final int invalidCombinations = Arrays.stream(dp).reduce(0, (a, b) -> (a + b) % MOD);
-    return (totalCombinations - invalidCombinations + MOD) % MOD;
-  }
+        if (freq.size() >= k) return (int) P;
 
-  private static final int MOD = 1_000_000_007;
+        int n = freq.size();
+        int[][] t = new int[n + 1][k + 1];
 
-  // Returns consecutive identical letters in the input string.
-  // e.g. "aabbbc" -> [2, 3, 1].
-  private List<Integer> getConsecutiveLetters(final String word) {
-    List<Integer> groups = new ArrayList<>();
-    int group = 1;
-    for (int i = 1; i < word.length(); ++i)
-      if (word.charAt(i) == word.charAt(i - 1)) {
-        ++group;
-      } else {
-        groups.add(group);
-        group = 1;
-      }
-    groups.add(group);
-    return groups;
-        
+        for (int c = k - 1; c >= 0; c--) {
+            t[n][c] = 1;
+        }
+
+        for (int i = n - 1; i >= 0; i--) {
+            int[] prefix = new int[k + 2];
+            for (int h = 1; h <= k; h++) {
+                prefix[h] = (prefix[h - 1] + t[i + 1][h - 1]) % M;
+            }
+
+            for (int c = k - 1; c >= 0; c--) {
+                int l = c + 1;
+                int r = c + freq.get(i);
+
+                if (r + 1 > k) {
+                    r = k - 1;
+                }
+
+                if (l <= r) {
+                    t[i][c] = (prefix[r + 1] - prefix[l] + M) % M;
+                }
+            }
+        }
+
+        long invalidCount = t[0][0];
+        return (int)((P - invalidCount + M) % M);
     }
 }
